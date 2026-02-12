@@ -1,6 +1,7 @@
 import os
 import logging
 
+from dotenv import load_dotenv
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 
 from src.bot.handlers import handle_grievance, handle_escalate
@@ -39,6 +40,7 @@ def build_app():
 
 
 def main():
+    load_dotenv()
     logger.info("Starting bot...")
     app = build_app()
     app.run_polling()

@@ -212,3 +212,68 @@ Excluded:
 - No external database is required
 
 ---
+
+# Setup
+
+## Prerequisites
+
+1. Create a Telegram bot via [@BotFather](https://t.me/BotFather) and note the **bot token**
+2. Create two Telegram groups (Mediator and Trusted Party)
+3. Add the bot to both groups and note their **chat IDs**
+4. Choose a **secret salt** (any random string)
+
+## Install
+
+```bash
+git clone <repo-url> && cd confidential-grievances
+./scripts/setup.sh
+```
+
+This installs [uv](https://docs.astral.sh/uv/) and all project dependencies.
+
+## Configure
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your values:
+
+```
+BOT_TOKEN=123456:ABC-DEF...
+MEDIATOR_CHAT_ID=-100123456789
+TP_CHAT_ID=-100987654321
+BOT_SECRET_SALT=your-random-secret
+```
+
+## Run
+
+```bash
+uv run python -m src.bot.app
+```
+
+## Run as a systemd service
+
+To install the bot as a service that starts on boot and auto-restarts on failure:
+
+```bash
+./scripts/install-service.sh
+```
+
+Useful commands after installation:
+
+```bash
+sudo systemctl status grievance-bot    # check status
+sudo journalctl -u grievance-bot -f    # follow logs
+sudo systemctl restart grievance-bot   # restart
+sudo systemctl stop grievance-bot      # stop
+```
+
+## Development
+
+```bash
+uv run flake8 src/ tests/    # lint
+uv run pytest tests/ -v      # test
+```
+
+---
