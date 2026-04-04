@@ -108,7 +108,7 @@ async def test_grievance_confirms_receipt_to_pg(make_update, context, mock_send_
     await handle_grievance(update, context)
 
     update.effective_message.reply_text.assert_awaited_once_with(
-        "Your grievance has been received."
+        "Dein Kummer ist eingegangen."
     )
 
 
@@ -185,7 +185,7 @@ async def test_escalate_rejects_missing_hash(context, mock_send_tp_email):
 
     await handle_escalate(update, context)
 
-    update.effective_message.reply_text.assert_awaited_once_with("Usage: /escalate <hash>")
+    update.effective_message.reply_text.assert_awaited_once_with("Verwendung: /escalate <Hash>")
     mock_send_tp_email.assert_not_awaited()
 
 

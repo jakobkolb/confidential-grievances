@@ -4,6 +4,7 @@ import logging
 from dotenv import load_dotenv
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 
+from src.bot.error_reporting import TelegramErrorHandler, handle_update_error
 from src.bot.handlers import handle_grievance, handle_escalate, handle_start
 
 logging.basicConfig(
@@ -23,6 +24,7 @@ def _require_env(name: str) -> str:
 def build_app():
     """Build the Telegram Application from environment variables."""
     token            = _require_env("BOT_TOKEN")
+    error_chat_id    = int(_require_env("TELEGRAM_ERROR_CHAT_ID"))
     mediator_chat_id = int(_require_env("MEDIATOR_CHAT_ID"))
     secret_salt      = _require_env("BOT_SECRET_SALT")
 
@@ -35,6 +37,9 @@ def build_app():
     imap_port     = int(_require_env("IMAP_PORT"))
 
     app = ApplicationBuilder().token(token).build()
+
+    logging.getLogger().addHandler(TelegramErrorHandler(token, error_chat_id))
+    app.add_error_handler(handle_update_error)
 
     app.bot_data["mediator_chat_id"] = mediator_chat_id
     app.bot_data["secret_salt"]      = secret_salt

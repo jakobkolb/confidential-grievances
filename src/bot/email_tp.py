@@ -1,9 +1,12 @@
 import asyncio
 import imaplib
 import logging
+import re
 import smtplib
 import time
 from email.message import EmailMessage
+
+_HEX_HASH_RE = re.compile(r"[0-9a-f]{64}")
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +105,11 @@ def _imap_delete_sent(cfg: dict, subject: str) -> None:
             return
 
         imap.select(f'"{folder}"')
-        status, data = imap.search(None, f'SUBJECT "{subject}"')
+        # Search by the hash fragment (ASCII-safe) rather than the full subject,
+        # which may contain non-ASCII characters that imaplib cannot encode.
+        match = _HEX_HASH_RE.search(subject)
+        search_term = match.group(0) if match else subject
+        status, data = imap.search(None, f'SUBJECT "{search_term}"')
         if status != "OK" or not data[0]:
             logger.warning(
                 "Sent-folder search found no message with subject %r — skipping delete.",

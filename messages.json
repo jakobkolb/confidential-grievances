@@ -1,11 +1,11 @@
 {
-  "welcome": "👋 *Willkommen beim Vertraulichen Beschwerdebot*\n\nDieser Bot ermöglicht es dir, eine Beschwerde *anonym* einzureichen. So funktioniert es:\n\n• Deine Nachricht wird an einen neutralen Mediator weitergeleitet — *ohne deine Identität*.\n• Eine separate Vertrauensperson erhält nur deine Identität und einen Referenz-Hash — *ohne den Inhalt deiner Nachricht*.\n• Keine der beiden Parteien kann deinen Namen mit deiner Beschwerde in Verbindung bringen, ohne die Kooperation der anderen.\n\n*Um eine Beschwerde einzureichen*, sende deine Nachricht einfach als einfache Textnachricht in diesem Chat.\n\nDeine Eingabe ist vertraulich. Du erhältst eine Bestätigung, sobald sie eingegangen ist.",
-  "grievance_received": "Deine Beschwerde ist eingegangen.",
+  "welcome": "👋 *Willkommen beim Vertraulichen Kummerkasten Bot*\n\nDieser Bot ermöglicht es dir, einen Kummer *anonym* einzureichen. Das funktioniert so:\n\n• Deine Nachricht wird an das Kummerkasten Team weitergeleitet — *ohne deine Identität* (esseiden, du schreibst deinen Namen unter die Nachricht).\n• Eine separate Vertrauensperson erhält nur deine Identität und einen Referenz-Hash zu deiner Nachricht — *ohne den Inhalt deiner Nachricht*.\n• Keine der beiden Parteien kann deinen Namen mit deiner Beschwerde in Verbindung bringen, ohne die Kooperation der anderen.\n\n*Um eine Beschwerde einzureichen*, sende deine Nachricht einfach als einfache Textnachricht in diesem Chat.\n\nDeine Eingabe ist vertraulich. Du erhältst eine Bestätigung, sobald sie eingegangen ist.",
+  "grievance_received": "Dein Kummer ist eingegangen.",
   "escalate_usage": "Verwendung: /escalate <Hash>",
-  "escalate_sent": "Eskalation für {msg_hash} an die Vertrauensperson gesendet.",
-  "mediator_message": "Neue Beschwerde\nHash: {msg_hash}\nZeit: {timestamp}\n\n{body}",
+  "escalate_sent": "Eskalations Anfrage für {msg_hash} an die Vertrauensperson gesendet.",
+  "mediator_message": "*Neue Kummer Nachricht*\nHash: {msg_hash}\nZeit: {timestamp}\n\n{body}",
   "tp_grievance_subject": "Beschwerdeidentität [{msg_hash}]",
   "tp_grievance_message": "Identitätsnachweis\nHash: {msg_hash}\nAbsender: {sender} (uid: {user_id})\nZeit: {timestamp}",
   "tp_escalation_subject": "Eskalationsanfrage [{msg_hash}]",
-  "tp_escalation_message": "Eskalationsanfrage\nHash: {msg_hash}\n\nBitte diesen Hash nachschlagen und den Absender kontaktieren."
+  "tp_escalation_message": "Eskalationsanfrage\nHash: {msg_hash}\n\nBitte diesen Hash nachschlagen und den Absender der LiZu Vertrauensstelle mitteilen, sodass diese ihn kontaktieren kann."
 }

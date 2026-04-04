@@ -62,7 +62,29 @@ A Telegram group whose members review grievances and facilitate resolution.
 
 ---
 
-## 3) Trusted Party (TP)
+## 3) Bot Steward
+
+The person responsible for operating and maintaining the bot.
+
+- Deploys the bot and keeps it running (monitors the systemd service)
+- Receives error notifications directly via Telegram when something goes wrong
+- Rotates credentials (bot token, email password, secret salt) when needed
+- Implements improvements and applies updates
+- Has access to the bot host, the `.env` configuration, and the service logs
+
+| Access | Details |
+|--------|---------|
+| Bot host & config | Full access (required for operation) |
+| Grievance content | No — logs contain only hashes, never message bodies or identities |
+| Mediator group | No (unless also a Mediator member — should be avoided) |
+| TP inbox | No (unless also a TP member — should be avoided) |
+
+The steward's access to the host means they could in principle read environment variables or intercept traffic. This is an accepted operational trust boundary: the steward must be a trusted individual, and credential rotation limits the blast radius of any compromise.
+
+---
+
+## 4) Trusted Party (TP)
+
 
 An email inbox acting as identity escrow.
 

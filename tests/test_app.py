@@ -6,9 +6,10 @@ import pytest
 from src.bot.app import build_app
 
 FULL_ENV = {
-    "BOT_TOKEN":           "fake-token",
-    "MEDIATOR_CHAT_ID":    "-1001",
-    "BOT_SECRET_SALT":     "salt",
+    "BOT_TOKEN":                "fake-token",
+    "TELEGRAM_ERROR_CHAT_ID":   "999",
+    "MEDIATOR_CHAT_ID":         "-1001",
+    "BOT_SECRET_SALT":          "salt",
     "TP_EMAIL_RECIPIENT":  "tp@example.org",
     "BOT_EMAIL_ADDRESS":   "bot@example.org",
     "BOT_EMAIL_PASSWORD":  "password",
@@ -21,6 +22,7 @@ FULL_ENV = {
 
 @pytest.mark.parametrize("missing_var", [
     "BOT_TOKEN",
+    "TELEGRAM_ERROR_CHAT_ID",
     "MEDIATOR_CHAT_ID",
     "BOT_SECRET_SALT",
     "TP_EMAIL_RECIPIENT",
