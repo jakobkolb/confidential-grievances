@@ -1,0 +1,8 @@
+{
+  "grievance_received": "Your grievance has been received.",
+  "escalate_usage": "Usage: /escalate <hash>",
+  "escalate_sent": "Escalation for {msg_hash} sent to Trusted Party.",
+  "mediator_message": "New grievance\nHash: {msg_hash}\nTime: {timestamp}\n\n{body}",
+  "tp_grievance_message": "Identity record\nHash: {msg_hash}\nSender: {sender} (uid: {user_id})\nTime: {timestamp}",
+  "tp_escalation_message": "Escalation request\nHash: {msg_hash}\n\nPlease look up this hash and contact the sender."
+}
