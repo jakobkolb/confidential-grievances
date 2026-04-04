@@ -26,7 +26,7 @@ class TelegramErrorHandler(logging.Handler):
 
     def _format_record(self, record: logging.LogRecord) -> str:
         lines = [
-            f"🔴 *Bot Error*",
+            "🔴 *Bot Error*",
             f"`{record.levelname}` — `{record.name}`",
             f"```\n{record.getMessage()}\n```",
         ]

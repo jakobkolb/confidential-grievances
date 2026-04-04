@@ -23,18 +23,18 @@ def _require_env(name: str) -> str:
 
 def build_app():
     """Build the Telegram Application from environment variables."""
-    token            = _require_env("BOT_TOKEN")
-    error_chat_id    = int(_require_env("TELEGRAM_ERROR_CHAT_ID"))
+    token = _require_env("BOT_TOKEN")
+    error_chat_id = int(_require_env("TELEGRAM_ERROR_CHAT_ID"))
     mediator_chat_id = int(_require_env("MEDIATOR_CHAT_ID"))
-    secret_salt      = _require_env("BOT_SECRET_SALT")
+    secret_salt = _require_env("BOT_SECRET_SALT")
 
-    tp_recipient  = _require_env("TP_EMAIL_RECIPIENT")
-    bot_email     = _require_env("BOT_EMAIL_ADDRESS")
-    bot_password  = _require_env("BOT_EMAIL_PASSWORD")
-    smtp_host     = _require_env("SMTP_HOST")
-    smtp_port     = int(_require_env("SMTP_PORT"))
-    imap_host     = _require_env("IMAP_HOST")
-    imap_port     = int(_require_env("IMAP_PORT"))
+    tp_recipient = _require_env("TP_EMAIL_RECIPIENT")
+    bot_email = _require_env("BOT_EMAIL_ADDRESS")
+    bot_password = _require_env("BOT_EMAIL_PASSWORD")
+    smtp_host = _require_env("SMTP_HOST")
+    smtp_port = int(_require_env("SMTP_PORT"))
+    imap_host = _require_env("IMAP_HOST")
+    imap_port = int(_require_env("IMAP_PORT"))
 
     app = ApplicationBuilder().token(token).build()
 
@@ -42,7 +42,7 @@ def build_app():
     app.add_error_handler(handle_update_error)
 
     app.bot_data["mediator_chat_id"] = mediator_chat_id
-    app.bot_data["secret_salt"]      = secret_salt
+    app.bot_data["secret_salt"] = secret_salt
     app.bot_data["tp_email_cfg"] = {
         "recipient": tp_recipient,
         "from_addr": bot_email,
