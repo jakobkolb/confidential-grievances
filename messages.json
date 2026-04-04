@@ -1,8 +1,11 @@
 {
-  "grievance_received": "Your grievance has been received.",
-  "escalate_usage": "Usage: /escalate <hash>",
-  "escalate_sent": "Escalation for {msg_hash} sent to Trusted Party.",
-  "mediator_message": "New grievance\nHash: {msg_hash}\nTime: {timestamp}\n\n{body}",
-  "tp_grievance_message": "Identity record\nHash: {msg_hash}\nSender: {sender} (uid: {user_id})\nTime: {timestamp}",
-  "tp_escalation_message": "Escalation request\nHash: {msg_hash}\n\nPlease look up this hash and contact the sender."
+  "welcome": "👋 *Willkommen beim Vertraulichen Beschwerdebot*\n\nDieser Bot ermöglicht es dir, eine Beschwerde *anonym* einzureichen. So funktioniert es:\n\n• Deine Nachricht wird an einen neutralen Mediator weitergeleitet — *ohne deine Identität*.\n• Eine separate Vertrauensperson erhält nur deine Identität und einen Referenz-Hash — *ohne den Inhalt deiner Nachricht*.\n• Keine der beiden Parteien kann deinen Namen mit deiner Beschwerde in Verbindung bringen, ohne die Kooperation der anderen.\n\n*Um eine Beschwerde einzureichen*, sende deine Nachricht einfach als einfache Textnachricht in diesem Chat.\n\nDeine Eingabe ist vertraulich. Du erhältst eine Bestätigung, sobald sie eingegangen ist.",
+  "grievance_received": "Deine Beschwerde ist eingegangen.",
+  "escalate_usage": "Verwendung: /escalate <Hash>",
+  "escalate_sent": "Eskalation für {msg_hash} an die Vertrauensperson gesendet.",
+  "mediator_message": "Neue Beschwerde\nHash: {msg_hash}\nZeit: {timestamp}\n\n{body}",
+  "tp_grievance_subject": "Beschwerdeidentität [{msg_hash}]",
+  "tp_grievance_message": "Identitätsnachweis\nHash: {msg_hash}\nAbsender: {sender} (uid: {user_id})\nZeit: {timestamp}",
+  "tp_escalation_subject": "Eskalationsanfrage [{msg_hash}]",
+  "tp_escalation_message": "Eskalationsanfrage\nHash: {msg_hash}\n\nBitte diesen Hash nachschlagen und den Absender kontaktieren."
 }

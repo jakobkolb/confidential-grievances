@@ -4,25 +4,26 @@ A Telegram bot to enable confidential handling of grievances in an organization.
 
 # Grievance Mediation System — Technical Specification
 
-Minimal architecture enabling pseudonymous grievance submission with controlled identity escrow and escalation, using Telegram groups as the sole data store.
+Minimal architecture enabling pseudonymous grievance submission with controlled identity escrow and escalation. The Mediator communicates via a Telegram group; the Trusted Party receives notifications by email.
 
 ---
 
 ## Overview
 
-A Telegram bot receives grievances via DM and routes them to two Telegram groups:
+A Telegram bot receives grievances via DM and routes them to two separate parties:
 
-- **Mediator Group** — receives the grievance text + a reference hash
-- **Trusted Party (TP) Group** — receives the reference hash + the sender's Telegram identity
+- **Mediator Group** — a Telegram group that receives the grievance text + a reference hash
+- **Trusted Party (TP)** — an email inbox that receives the reference hash + the sender's Telegram identity
 
-No external database is used. The chat history in each group is the record.
+No external database is used. The Mediator group's chat history and the TP's email inbox are the records.
 
 ### Core Properties
 
 - Pseudonymous submission via bot DM
-- Identity escrow via TP group
+- Identity escrow via TP email
 - Hash‑based escalation reference
-- Data minimization: each group sees only what it needs
+- Data minimization: each party sees only what it needs
+- Sent emails are deleted from the bot's Sent folder immediately after delivery (privacy)
 - Zero infrastructure beyond the bot process itself
 
 ---
@@ -41,7 +42,7 @@ Individual submitting a grievance.
 |------|---------------|
 | Own message | Yes |
 | Routing metadata | No |
-| Which groups receive data | No |
+| Where data is sent | No |
 
 ---
 
@@ -51,7 +52,7 @@ A Telegram group whose members review grievances and facilitate resolution.
 
 - Receives: message body, message hash, timestamp
 - Does **not** receive the sender's Telegram identity
-- Can request escalation by forwarding the hash to the TP group (or via a bot command)
+- Can request escalation via the bot command `/escalate <hash>`
 
 | Data | Visible |
 |------|---------|
@@ -61,13 +62,14 @@ A Telegram group whose members review grievances and facilitate resolution.
 
 ---
 
-## 3) Trusted Party (TP) Group
+## 3) Trusted Party (TP)
 
-A Telegram group acting as identity escrow.
+An email inbox acting as identity escrow.
 
-- Receives: message hash, sender's Telegram user ID / handle, timestamp
+- Receives an email per grievance with: message hash, sender's Telegram user ID / handle, timestamp
 - Does **not** receive the message body
-- Upon escalation request (hash from Mediator), contacts the PG to facilitate voluntary identification
+- Upon escalation request, contacts the PG to facilitate voluntary identification
+- The bot deletes each email from its own Sent folder ~1 second after sending
 
 | Data | Visible |
 |------|---------|
@@ -94,7 +96,7 @@ hash = SHA256(
 
 **Purpose:**
 
-- Uniquely reference a grievance across both groups
+- Uniquely reference a grievance across both parties
 - Prevent spoofing
 - Enable escalation without identity disclosure
 
@@ -111,19 +113,21 @@ hash = SHA256(
    - Message body
    - Hash
    - Timestamp
-5. Bot posts to **TP Group**:
+5. Bot sends email to **TP inbox**:
    - Hash
    - Telegram user ID / handle
    - Timestamp
-6. Bot confirms receipt to PG (no details leaked)
+6. Bot deletes the email from its own Sent folder after ~1 second
+7. Bot confirms receipt to PG (no details leaked)
 
 ## 2) Escalation
 
 1. Mediator group member identifies a grievance that requires contact with the PG
-2. Mediator posts the hash to the TP group (or uses a bot command: `/escalate <hash>`)
-3. TP group member looks up the hash in their chat history to find the corresponding identity
-4. TP contacts PG via Telegram DM
-5. PG may voluntarily reach out to the Mediator
+2. Mediator uses the bot command: `/escalate <hash>`
+3. Bot sends an escalation email to the TP inbox with the hash
+4. TP member looks up the hash in their inbox to find the corresponding identity
+5. TP contacts PG via Telegram DM
+6. PG may voluntarily reach out to the Mediator
 
 ---
 
@@ -131,18 +135,21 @@ hash = SHA256(
 
 ## Data Separation
 
-Enforced by Telegram group membership:
-
-| Group | Sees | Does NOT see |
+| Party | Sees | Does NOT see |
 |-------|------|--------------|
-| Mediator | Message body, hash | PG identity |
-| TP | PG identity, hash | Message body |
+| Mediator group | Message body, hash | PG identity |
+| Trusted Party (email) | PG identity, hash | Message body |
 
-No single group has both identity and message content.
+No single party has both identity and message content.
+
+## Sent-mail Scrubbing
+
+After each email to the TP, the bot waits 1 second then connects via IMAP and deletes the message from its Sent folder. This ensures no persistent record of sent emails exists on the bot's mail account. If the Sent folder cannot be located or the message is not found (e.g. slow server indexing), an error is logged but the grievance submission is not interrupted.
 
 ## Access Control
 
-- Bot must be a member of both groups with permission to post
+- Bot must be a member of the Mediator group with permission to post
+- Bot email account credentials are stored as environment variables on the bot host
 - Group membership is managed by the respective group admins
 - Bot secret salt is stored as an environment variable on the bot host
 
@@ -150,10 +157,11 @@ No single group has both identity and message content.
 
 | Risk | Mitigation |
 |------|------------|
-| Someone in both groups | Organizational policy: no overlapping membership |
-| Bot host compromise | Rotate bot token + salt; bot holds no persistent data |
+| Someone in both Mediator group and TP inbox | Organizational policy: no overlapping access |
+| Bot host compromise | Rotate bot token, email password + salt; bot holds no persistent data |
 | False submissions | Rate limiting per Telegram user ID |
 | Chat history deletion | Telegram group settings: restrict message deletion |
+| Email not scrubbed from Sent | Error is logged; operator should monitor logs |
 
 ---
 
@@ -165,21 +173,25 @@ PG (Telegram DM)
        ▼
   Bot Process
    ├── compute hash
-   ├──► Mediator Group  (body + hash)
-   └──► TP Group        (identity + hash)
+   ├──► Mediator Group (Telegram)   body + hash + timestamp
+   └──► TP Inbox (email)            identity + hash + timestamp
+              └── IMAP delete from Sent (~1s later)
 ```
 
 The bot is a single stateless process. It needs:
 
 - A Telegram bot token
-- The chat IDs of the Mediator and TP groups
-- A secret salt (environment variable)
+- The chat ID of the Mediator group
+- A dedicated email account (SMTP + IMAP access)
+- The TP recipient email address
+- A secret salt
 
 ---
 
 # Tech Stack
 
 - Python with `python-telegram-bot`
+- Stdlib `smtplib` / `imaplib` for email (no extra dependencies)
 - Single deployment target (any host that can run a Python process)
 - No database
 
@@ -190,25 +202,29 @@ The bot is a single stateless process. It needs:
 Included:
 
 - Telegram bot accepting DMs from PGs
-- Hash computation and dual routing to Mediator / TP groups
-- `/escalate <hash>` bot command for Mediator group
+- Welcome message on `/start`
+- Hash computation and dual routing to Mediator group (Telegram) and TP (email)
+- `/escalate <hash>` bot command for the Mediator group
+- Sent-mail scrubbing via IMAP
 - Receipt confirmation to PG
 
 Excluded:
 
 - Anonymous reply channels (PG cannot receive messages back through the bot)
 - Analytics / reporting
-- Case management beyond chat history
+- Case management beyond chat history / email inbox
 
 ---
 
 # Acceptance Criteria
 
+- PG receives a welcome message when starting the bot
 - PG can submit a grievance via bot DM
 - Grievance body appears in Mediator group without PG identity
-- PG identity appears in TP group without grievance body
-- Hash links the two records
-- `/escalate <hash>` triggers a notification in the TP group
+- PG identity is emailed to the TP inbox without the grievance body
+- Email is deleted from the bot's Sent folder after delivery
+- Hash links the Mediator message and the TP email
+- `/escalate <hash>` triggers a notification email to the TP inbox
 - No external database is required
 
 ---
@@ -218,9 +234,11 @@ Excluded:
 ## Prerequisites
 
 1. Create a Telegram bot via [@BotFather](https://t.me/BotFather) and note the **bot token**
-2. Create two Telegram groups (Mediator and Trusted Party)
-3. Add the bot to both groups and note their **chat IDs**
-4. Choose a **secret salt** (any random string)
+2. Create a Telegram group for the Mediator and note its **chat ID**
+3. Add the bot to the Mediator group with permission to post
+4. Create a dedicated email account for the bot (SMTP + IMAP access required)
+5. Note the TP recipient email address
+6. Choose a **secret salt** (any random string)
 
 ## Install
 
@@ -242,9 +260,18 @@ Edit `.env` with your values:
 ```
 BOT_TOKEN=123456:ABC-DEF...
 MEDIATOR_CHAT_ID=-100123456789
-TP_CHAT_ID=-100987654321
 BOT_SECRET_SALT=your-random-secret
+
+TP_EMAIL_RECIPIENT=trustedparty@example.org
+BOT_EMAIL_ADDRESS=grievance-bot@example.org
+BOT_EMAIL_PASSWORD=your-email-password
+SMTP_HOST=smtp.example.org
+SMTP_PORT=465
+IMAP_HOST=imap.example.org
+IMAP_PORT=993
 ```
+
+`SMTP_PORT=465` uses implicit TLS (`SMTP_SSL`). For STARTTLS on port 587, see the note in `src/bot/email_tp.py`.
 
 ## Run
 
@@ -265,7 +292,7 @@ Useful commands after installation:
 ```bash
 sudo systemctl status grievance-bot    # check status
 sudo journalctl -u grievance-bot -f    # follow logs
-sudo systemctl restart grievance-bot   # restart
+sudo systemctl restart grievance-bot   # restart after config changes
 sudo systemctl stop grievance-bot      # stop
 ```
 

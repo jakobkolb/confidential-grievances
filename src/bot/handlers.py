@@ -7,6 +7,7 @@ from telegram import Bot, Update
 from telegram.error import ChatMigrated
 from telegram.ext import ContextTypes
 
+from src.bot.email_tp import send_tp_email
 from src.bot.hashing import compute_hash
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,15 @@ async def _send(bot: Bot, bot_data: dict, chat_id_key: str, text: str) -> None:
         await bot.send_message(chat_id=exc.new_chat_id, text=text)
 
 
+async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send a welcome message when the user starts the bot."""
+    if update.effective_message is None:
+        return
+    await update.effective_message.reply_text(
+        MESSAGES["welcome"], parse_mode="Markdown"
+    )
+
+
 async def handle_grievance(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle a private DM: hash it and route to Mediator + TP groups."""
     message = update.effective_message
@@ -51,12 +61,13 @@ async def handle_grievance(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     )
     await _send(context.bot, context.bot_data, "mediator_chat_id", mediator_text)
 
-    # TP group: hash + identity + timestamp (NO body)
+    # TP email: hash + identity + timestamp (NO body)
     sender = f"@{user.username}" if user.username else f"id:{user.id}"
+    tp_subject = MESSAGES["tp_grievance_subject"].format(msg_hash=msg_hash)
     tp_text = MESSAGES["tp_grievance_message"].format(
         msg_hash=msg_hash, sender=sender, user_id=user.id, timestamp=timestamp
     )
-    await _send(context.bot, context.bot_data, "tp_chat_id", tp_text)
+    await send_tp_email(context.bot_data, tp_subject, tp_text)
 
     # Confirm receipt to PG
     await message.reply_text(MESSAGES["grievance_received"])
@@ -81,7 +92,8 @@ async def handle_escalate(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     msg_hash = context.args[0]
 
+    tp_subject = MESSAGES["tp_escalation_subject"].format(msg_hash=msg_hash)
     tp_text = MESSAGES["tp_escalation_message"].format(msg_hash=msg_hash)
-    await _send(context.bot, context.bot_data, "tp_chat_id", tp_text)
+    await send_tp_email(context.bot_data, tp_subject, tp_text)
     await message.reply_text(MESSAGES["escalate_sent"].format(msg_hash=msg_hash))
     logger.info("Escalation routed — hash: %s", msg_hash)
