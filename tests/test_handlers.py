@@ -113,7 +113,8 @@ async def test_grievance_confirms_receipt_to_pg(make_update, context, mock_send_
 
 
 @pytest.mark.asyncio
-async def test_grievance_falls_back_to_user_id_when_no_username(make_update, context, mock_send_tp_email):
+async def test_grievance_falls_back_to_user_id_when_no_username(
+        make_update, context, mock_send_tp_email):
     update = make_update(user_id=99, username=None, text="anon complaint")
 
     await handle_grievance(update, context)
