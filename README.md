@@ -295,6 +295,14 @@ IMAP_PORT=993
 
 `SMTP_PORT=465` uses implicit TLS (`SMTP_SSL`). For STARTTLS on port 587, see the note in `src/bot/email_tp.py`.
 
+`MEDIATOR_CHAT_ID` is the mediator group's chat ID. The `-100` prefix (as in the example above) only applies to **supergroups**/channels — a plain **basic group** has an unprefixed id like `-123456789`. Using the wrong form gives `telegram.error.BadRequest: Chat not found` when the bot tries to send there. To get the right value, add the bot to the group, then call `getChat` with the id you suspect, e.g.:
+
+```bash
+curl "https://api.telegram.org/bot$BOT_TOKEN/getChat?chat_id=-123456789"
+```
+
+A successful response's `"type"` tells you whether it's `"group"` (no `-100` prefix) or `"supergroup"`/`"channel"` (needs it).
+
 ## Run
 
 ```bash
@@ -317,6 +325,19 @@ sudo journalctl -u grievance-bot -f    # follow logs
 sudo systemctl restart grievance-bot   # restart after config changes
 sudo systemctl stop grievance-bot      # stop
 ```
+
+## Rotate Kummerkasten Gruppe
+
+- Create new Kummerkasten Telegram Group
+- Add Bot to Group. 
+- Get Group ID from Telegram Web URL of Group
+- Set Group ID in Bot .env
+- Restart Bot Service
+- Test if message to Bot is forwarded to new group
+- Add new Kummerkasten Group Members to Group
+- Promote one of them to Admin with full rights
+- Transfer ownership of group to said admin
+- Leave group.
 
 ## Development
 
